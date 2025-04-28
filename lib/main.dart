@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_app/providers/task_provider.dart';
+import 'package:todo_app/models/task.dart'; // <-- adicione esta linha
+
 
 void main() {
   runApp(
@@ -50,6 +52,83 @@ class _TaskListPageState extends State<TaskListPage> {
       });
     }
   }
+
+  void _showEditDialog(BuildContext context, Task task, TaskProvider taskProvider) {
+  final TextEditingController editController = TextEditingController(text: task.title);
+  DateTime? newSelectedDate = task.dueDate;
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            title: const Text('Editar Tarefa'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: editController,
+                  decoration: const InputDecoration(labelText: 'Título'),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        newSelectedDate != null
+                            ? "Vencimento: ${newSelectedDate?.day}/${newSelectedDate?.month}/${newSelectedDate?.year}"
+                            : "Sem vencimento",
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.date_range),
+                      onPressed: () async {
+                        final DateTime? picked = await showDatePicker(
+                          context: context,
+                          initialDate: newSelectedDate ?? DateTime.now(),
+                          firstDate: DateTime(2000),
+                          lastDate: DateTime(2100),
+                        );
+                        if (picked != null) {
+                          setState(() {
+                            newSelectedDate = picked;
+                          });
+                        }
+                      },
+                    )
+                  ],
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Cancelar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  if (editController.text.isNotEmpty) {
+                    taskProvider.editTask(
+                      task.id,
+                      editController.text,
+                      newSelectedDate ?? DateTime.now(),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                child: const Text('Salvar'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
 
 
   @override
@@ -178,12 +257,24 @@ class _TaskListPageState extends State<TaskListPage> {
                       ? Text(
                           "Vence em: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}")
                       : null,
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      taskProvider.deleteTask(task.id);
-                    },
-                  ),
+                  
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit),
+                        onPressed: () {
+                          _showEditDialog(context, task, taskProvider);
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.delete),
+                        onPressed: () {
+                          taskProvider.deleteTask(task.id);
+                        },
+                      ),
+                    ],
+                  ),                 
                 );
               },
             ),
@@ -193,3 +284,4 @@ class _TaskListPageState extends State<TaskListPage> {
     );
   }
 }
+

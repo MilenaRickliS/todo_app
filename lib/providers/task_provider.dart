@@ -80,4 +80,14 @@ class TaskProvider with ChangeNotifier {
     _tasks.removeWhere((task) => task.id == id);
     notifyListeners();
   }
+
+  void editTask(String id, String newTitle, DateTime? newDate) {
+  final taskIndex = _tasks.indexWhere((task) => task.id == id);
+  if (taskIndex != -1) {
+    _tasks[taskIndex].title = newTitle;
+    _tasks[taskIndex].dueDate = newDate; // Pode ser null
+    notifyListeners();
+  }
+}
+
 }
