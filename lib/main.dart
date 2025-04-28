@@ -22,12 +22,35 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const TaskListPage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
 
-class TaskListPage extends StatelessWidget {
+class TaskListPage extends StatefulWidget {
   const TaskListPage({super.key});
+
+  @override
+  _TaskListPageState createState() => _TaskListPageState();
+}
+
+class _TaskListPageState extends State<TaskListPage> {
+   DateTime? selectedDate;
+
+  void _pickDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2100),
+    );
+    if (picked != null) {
+      setState(() {
+        selectedDate = picked;
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -55,22 +78,87 @@ class TaskListPage extends StatelessWidget {
                       ),
                 ),
                 IconButton(
+                  icon: const Icon(Icons.date_range),
+                  onPressed: () => _pickDate(context),
+                ),
+                IconButton(
                   icon: const Icon(Icons.add),
                   onPressed: () {
                     if (taskController.text.isNotEmpty) {
-                      taskProvider.addTask(taskController.text);
+                      taskProvider.addTask(taskController.text, selectedDate);
                       taskController.clear();
+                      setState(() {
+                        selectedDate = null;
+                      });
                     }
                   },
                 ),
               ],
             ),
           ),
+          if (selectedDate != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: Text(
+                "Data de vencimento: ${selectedDate!.day}/${selectedDate!.month}/${selectedDate!.year}",
+                style: const TextStyle(fontSize: 14),
+              ),
+            ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Row(
+              children: [
+                // Filtro de Tarefas
+                DropdownButton<FilterType>(
+                  value: taskProvider.filter,
+                  onChanged: (filter) {
+                    if (filter != null) {
+                      taskProvider.setFilter(filter);
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: FilterType.all,
+                      child: Text('Todas'),
+                    ),
+                    DropdownMenuItem(
+                      value: FilterType.completed,
+                      child: Text('Concluídas'),
+                    ),
+                    DropdownMenuItem(
+                      value: FilterType.notCompleted,
+                      child: Text('Não concluídas'),
+                    ),
+                  ],
+                ),
+                const SizedBox(width: 16),
+                // Ordenação das Tarefas
+                DropdownButton<SortType>(
+                  value: taskProvider.sortType,
+                  onChanged: (sortType) {
+                    if (sortType != null) {
+                      taskProvider.setSortType(sortType);
+                    }
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: SortType.byTitle,
+                      child: Text('Por título'),
+                    ),
+                    DropdownMenuItem(
+                      value: SortType.byDueDate,
+                      child: Text('Por data de vencimento'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
           Expanded(
             child: ListView.builder(
-              itemCount: taskProvider.tasks.length,
+              itemCount: taskProvider.filteredTasks.length,
               itemBuilder: (context, index) {
-                final task = taskProvider.tasks[index];
+                final task = taskProvider.filteredTasks[index];
                 return ListTile(
                   leading: Checkbox(
                     value: task.isCompleted,
@@ -86,6 +174,10 @@ class TaskListPage extends StatelessWidget {
                       : TextDecoration.none,
                     ),
                   ),
+                  subtitle: task.dueDate != null
+                      ? Text(
+                          "Vence em: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}")
+                      : null,
                   trailing: IconButton(
                     icon: const Icon(Icons.delete),
                     onPressed: () {
