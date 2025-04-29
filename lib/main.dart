@@ -248,23 +248,23 @@ class TaskListPageState extends State<TaskListPage> {
               ),
               if (getPendingReminders(taskProvider) > 0)
                 Positioned(
-                  right: 11,
-                  top: 11,
+                  right: 9,
+                  top: 1,
                   child: Container(
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 18,
-                      minHeight: 18,
+                      minWidth: 13,
+                      minHeight: 13,
                     ),
                     child: Text(
                       '${getPendingReminders(taskProvider)}',
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 10,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -287,6 +287,7 @@ class TaskListPageState extends State<TaskListPage> {
                       decoration: const InputDecoration(
                         labelText: 'Nova tarefa',
                         border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.task),
                       ),
                       ),
                 ),
@@ -398,9 +399,8 @@ class TaskListPageState extends State<TaskListPage> {
                     title: Text(
                       task.title,
                       style: TextStyle(
-                        decoration: task.isCompleted
-                        ? TextDecoration.lineThrough
-                        : TextDecoration.none,
+                        decoration: task.isCompleted ? TextDecoration.lineThrough : TextDecoration.none,
+                        color: isPast ? Colors.red : null,
                       ),
                     ),
                     subtitle: task.dueDate != null
