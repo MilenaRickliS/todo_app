@@ -384,42 +384,47 @@ class TaskListPageState extends State<TaskListPage> {
                 bool showBell = isDueToday || isPast;
 
 
-                return ListTile(
-                  leading: Checkbox(
-                    value: task.isCompleted,
-                      onChanged: (value) {
-                        taskProvider.toggleTask(task.id);
-                      },
-                  ),
-                  title: Text(
-                    task.title,
-                    style: TextStyle(
-                      decoration: task.isCompleted
-                      ? TextDecoration.lineThrough
-                      : TextDecoration.none,
+                return Card(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  elevation: 2,
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    leading: Checkbox(
+                      value: task.isCompleted,
+                        onChanged: (value) {
+                          taskProvider.toggleTask(task.id);
+                        },
                     ),
-                  ),
-                  subtitle: task.dueDate != null
-                      ? Text(
-                          "Vence em: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}")
-                      : null,                  
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      ShakingBellIcon(shouldShake: showBell),
-                      IconButton(
-                        icon: const Icon(Icons.edit),
-                        onPressed: () {
-                          _showEditDialog(context, task, taskProvider);
-                        },
+                    title: Text(
+                      task.title,
+                      style: TextStyle(
+                        decoration: task.isCompleted
+                        ? TextDecoration.lineThrough
+                        : TextDecoration.none,
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.delete),
-                        onPressed: () {
-                          taskProvider.deleteTask(task.id);
-                        },
-                      ),
-                    ],
+                    ),
+                    subtitle: task.dueDate != null
+                        ? Text(
+                            "Vence em: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}")
+                        : null,                  
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ShakingBellIcon(shouldShake: showBell),
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () {
+                            _showEditDialog(context, task, taskProvider);
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () {
+                            taskProvider.deleteTask(task.id);
+                          },
+                        ),
+                      ],
+                    ),
                   ),                 
                 );
               },
