@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todo_app/providers/task_provider.dart';
 
-
 class ShakingBellIcon extends StatefulWidget {
   final bool shouldShake;
+  final Color iconColor;
 
-  const ShakingBellIcon({super.key, required this.shouldShake});
+  const ShakingBellIcon({super.key, required this.shouldShake, this.iconColor = Colors.black,});
 
   @override
   ShakingBellIconState createState() => ShakingBellIconState();
@@ -55,7 +55,7 @@ class ShakingBellIconState extends State<ShakingBellIcon>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      child: const Icon(Icons.notifications),
+      child: Icon(Icons.notifications, color: widget.iconColor),
       builder: (context, child) {
         return Transform.rotate(
           angle: _animation.value,
@@ -99,19 +99,45 @@ class ReminderPage extends StatelessWidget {
               task.dueDate!.isBefore(DateTime.now()) &&
               !isToday;
 
-          final showBell = isToday || isPast;
+          final showBell = isToday || isPast && !task.isCompleted;
 
-          return ListTile(
-            title: Text(
-              "LEMBRETE: ${task.title}",
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              "Vencimento: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}",
-            ),
-            trailing: showBell
-                ? const ShakingBellIcon(shouldShake: true)
-                : const Icon(Icons.notifications_none),
+          Color bellColor;
+          if (task.isCompleted) {
+            bellColor = Colors.grey;
+          } else if (isPast) {
+            bellColor = Colors.red;
+          } else if (isToday) {
+            bellColor = Colors.orange;
+          } else {
+            bellColor = Colors.grey;
+          } 
+
+          return Card(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            elevation: 2,
+              child: ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                title: Text(
+                  "LEMBRETE",
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      task.title,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "Vencimento: ${task.dueDate!.day}/${task.dueDate!.month}/${task.dueDate!.year}",
+                    ),
+                  ],
+                ),
+                trailing: showBell
+                  ? ShakingBellIcon(shouldShake: true, iconColor: bellColor,)
+                  : const Icon(Icons.notifications_none),
+              ),
           );
         },
       ),

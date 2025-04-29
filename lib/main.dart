@@ -24,6 +24,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorSchemeSeed: Colors.blue,
+        scaffoldBackgroundColor: const Color.fromARGB(255, 189, 218, 236),
       ),
       home: const TaskListPage(),
       debugShowCheckedModeBanner: false,
@@ -33,8 +34,9 @@ class MyApp extends StatelessWidget {
 
 class ShakingBellIcon extends StatefulWidget {
   final bool shouldShake;
+  final Color iconColor;
 
-  const ShakingBellIcon({super.key, required this.shouldShake});
+  const ShakingBellIcon({super.key, required this.shouldShake, this.iconColor = Colors.black,});
 
   @override
   ShakingBellIconState createState() => ShakingBellIconState();
@@ -83,7 +85,7 @@ class ShakingBellIconState extends State<ShakingBellIcon>
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _controller,
-      child: const Icon(Icons.notifications),
+      child: Icon(Icons.notifications, color: widget.iconColor),
       builder: (context, child) {
         return Transform.rotate(
           angle: _animation.value,
@@ -382,7 +384,20 @@ class TaskListPageState extends State<TaskListPage> {
                 bool isPast = task.dueDate != null &&
                     task.dueDate!.isBefore(DateTime(now.year, now.month, now.day));
 
-                bool showBell = isDueToday || isPast;
+                bool showBell = (isDueToday || isPast) && !task.isCompleted;
+
+
+                Color bellColor;
+                if (task.isCompleted) {
+                  bellColor = Colors.grey;
+                } else if (isPast) {
+                  bellColor = Colors.red;
+                } else if (isDueToday) {
+                  bellColor = Colors.orange;
+                } else {
+                  bellColor = Colors.grey;
+                }
+
 
 
                 return Card(
@@ -410,7 +425,7 @@ class TaskListPageState extends State<TaskListPage> {
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        ShakingBellIcon(shouldShake: showBell),
+                        ShakingBellIcon(shouldShake: showBell, iconColor: bellColor,),
                         IconButton(
                           icon: const Icon(Icons.edit),
                           onPressed: () {
